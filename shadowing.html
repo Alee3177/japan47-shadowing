@@ -21,11 +21,12 @@
     }
     *{box-sizing:border-box}
     body{
-      margin:0;
-      font-family:Arial,"Noto Sans TC",sans-serif;
-      background:linear-gradient(180deg,#09101d,#10182d 45%,#0a1120);
-      color:var(--text);
-    }
+  margin:0;
+  font-family:Arial,"Noto Sans TC",sans-serif;
+  background:linear-gradient(180deg,#09101d,#10182d 45%,#0a1120);
+  color:var(--text);
+  padding-top: env(safe-area-inset-top);
+}
     .container{
       max-width:1100px;
       margin:0 auto;
@@ -52,11 +53,17 @@
       padding:16px;
       box-shadow:0 10px 28px rgba(0,0,0,.28);
     }
-    .main-card{
-      position:sticky;
-      top:10px;
-      z-index:20;
-    }
+.main-card{
+  position:relative;
+}
+
+.main-card-wrap{
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  z-index: 50;
+  background:#0b1020;
+  padding-bottom:10px;
+}
     label{
       display:block;
       color:var(--muted);
@@ -221,8 +228,10 @@
     @media (max-width: 960px){
       .grid{grid-template-columns:1fr}
       .main-card{
-        position:sticky;
-        top:8px;
+        position:relative;
+      }
+      .main-card-wrap{
+        top: calc(env(safe-area-inset-top, 0px) + 12px);
       }
       .table-wrap{
         max-height:48vh;
@@ -253,49 +262,50 @@
       點畫面即自動播放版｜適合 LINE 使用｜內建 repeat + 延遲 shadowing 節奏
     </div>
 
-    <div class="grid">
-      <div class="card">
-        <label>MP3 檔名 / 路徑</label>
-        <input id="audioPath" type="text" value="Japan47prefectures.mp3">
+<div class="grid">
+  <div class="card">
+    <label>MP3 檔名 / 路徑</label>
+    <input id="audioPath" type="text" value="Japan47prefectures.mp3">
 
-        <label>JSON 檔名 / 路徑</label>
-        <input id="jsonPath" type="text" value="japan47_shadowing_A_audio_exact_shifted_3_5s.json">
+    <label>JSON 檔名 / 路徑</label>
+    <input id="jsonPath" type="text" value="japan47_shadowing_A_audio_exact_shifted_3_5s.json">
 
-        <label>播放速度</label>
-<select id="speed">
-  <option value="0.8" selected>0.8x</option>
-  <option value="0.85">0.85x</option>
-  <option value="0.9">0.9x</option>
-  <option value="1.0">1.0x</option>
-</select>
+    <label>播放速度</label>
+    <select id="speed">
+      <option value="0.8" selected>0.8x</option>
+      <option value="0.85">0.85x</option>
+      <option value="0.9">0.9x</option>
+      <option value="1.0">1.0x</option>
+    </select>
 
-        <label>跟讀延遲（毫秒）</label>
-        <input id="delay" type="number" min="0" step="100" value="0">
+    <label>跟讀延遲（毫秒）</label>
+    <input id="delay" type="number" min="0" step="100" value="0">
 
-        <label>每句自動重播次數</label>
-        <input id="repeat" type="number" min="1" max="5" step="1" value="1">
+    <label>每句自動重播次數</label>
+    <input id="repeat" type="number" min="1" max="5" step="1" value="1">
 
-        <label>開始句號</label>
-        <input id="startIndex" type="number" min="1" step="1" value="1">
+    <label>開始句號</label>
+    <input id="startIndex" type="number" min="1" step="1" value="1">
 
-        <div class="btns">
-          <button id="loadBtn" class="primary">重新載入 JSON</button>
-          <button id="playBtn" class="success">重新開始</button>
-          <button id="pauseBtn" class="warning">暫停 / 繼續</button>
-          <button id="stopBtn" class="danger">停止</button>
-        </div>
-
-      </div>
-
-      <div class="card main-card">
-        <div class="badge" id="progressBadge">尚未載入資料</div>
-        <div class="jp" id="jp">請先點畫面開始</div>
-        <div class="kana" id="kana">平假名：—</div>
-        <div class="romaji" id="romaji">羅馬拼音：—</div>
-        <div class="zh" id="zh">中文：—</div>
-        <div class="status" id="status">狀態：待命</div>
-      </div>
+    <div class="btns">
+      <button id="loadBtn" class="primary">重新載入 JSON</button>
+      <button id="playBtn" class="success">重新開始</button>
+      <button id="pauseBtn" class="warning">暫停 / 繼續</button>
+      <button id="stopBtn" class="danger">停止</button>
     </div>
+  </div>
+</div>
+
+<div class="main-card-wrap">
+  <div class="card main-card">
+    <div class="badge" id="progressBadge">尚未載入資料</div>
+    <div class="jp" id="jp">請先點畫面開始</div>
+    <div class="kana" id="kana">平假名：—</div>
+    <div class="romaji" id="romaji">羅馬拼音：—</div>
+    <div class="zh" id="zh">中文：—</div>
+    <div class="status" id="status">狀態：待命</div>
+  </div>
+</div>
 
     <div class="table-wrap">
       <table>
@@ -316,6 +326,7 @@
 
   <script>
     const audio = document.getElementById("audio");
+    const tableWrap = document.querySelector(".table-wrap");
 
     const els = {
       overlay: document.getElementById("overlay"),
@@ -346,6 +357,16 @@
     let isPaused = false;
     let isUnlocked = false;
     let started = false;
+    let rafId = 0;
+    let monitorToken = 0;
+    let currentSegEnd = 0;
+    let pendingTimer = 0;
+    let activeRow = null;
+
+    audio.preload = "auto";
+    audio.playsInline = true;
+    audio.setAttribute("playsinline", "");
+    audio.setAttribute("webkit-playsinline", "");
 
     function setStatus(msg){
       els.status.textContent = "狀態：" + msg;
@@ -358,7 +379,16 @@
     }
 
     function applySpeed(){
-      audio.playbackRate = parseFloat(els.speed.value || "0.9");
+      audio.playbackRate = parseFloat(els.speed.value || "0.8");
+    }
+
+    function clearAsyncHandles(){
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = 0;
+      monitorToken += 1;
+      if (pendingTimer) clearTimeout(pendingTimer);
+      pendingTimer = 0;
+      audio.ontimeupdate = null;
     }
 
     function renderTable(){
@@ -374,6 +404,22 @@
         `;
         els.tableBody.appendChild(tr);
       });
+      activeRow = null;
+    }
+
+    function scrollRowIntoTable(row){
+      if (!tableWrap || !row) return;
+      const rowTop = row.offsetTop;
+      const rowBottom = rowTop + row.offsetHeight;
+      const viewTop = tableWrap.scrollTop;
+      const viewBottom = viewTop + tableWrap.clientHeight;
+      const pad = 18;
+
+      if (rowTop < viewTop + pad) {
+        tableWrap.scrollTop = Math.max(0, rowTop - pad);
+      } else if (rowBottom > viewBottom - pad) {
+        tableWrap.scrollTop = Math.max(0, rowBottom - tableWrap.clientHeight + pad);
+      }
     }
 
     function updateText(seg, idx){
@@ -383,199 +429,234 @@
       els.romaji.textContent = "羅馬拼音：" + (seg.romaji || "—");
       els.zh.textContent = "中文：" + (seg.zh || "—");
 
-      document.querySelectorAll("#tableBody tr.active").forEach(el => el.classList.remove("active"));
+      if (activeRow) activeRow.classList.remove("active");
       const row = document.getElementById("row-" + idx);
       if(row){
         row.classList.add("active");
-
-        const wrap = document.querySelector(".table-wrap");
-        if(wrap){
-          const rowTop = row.offsetTop;
-          const rowHeight = row.offsetHeight;
-          const targetTop = rowTop - (wrap.clientHeight / 2) + (rowHeight / 2);
-          wrap.scrollTo({
-            top: Math.max(0, targetTop),
-            behavior: "smooth"
-          });
-        }
+        activeRow = row;
+        scrollRowIntoTable(row);
       }
     }
 
     async function loadJSON(){
       const path = els.jsonPath.value.trim();
-      const res = await fetch(path);
+      const res = await fetch(path, { cache: "no-store" });
       if(!res.ok){
         throw new Error("JSON 載入失敗");
       }
-      segments = await res.json();
+      const raw = await res.json();
+      segments = raw.map(seg => ({
+        ...seg,
+        start: Number(seg.start),
+        end: Number(seg.end)
+      }));
       renderTable();
       setStatus(`JSON 載入完成，共 ${segments.length} 句`);
     }
 
-async function unlockAudio(){
-  audio.muted = true;
-  audio.playsInline = true;
-  audio.setAttribute("playsinline", "");
-  audio.setAttribute("webkit-playsinline", "");
-  applySpeed();
+    function ensureAudioSource(){
+      const src = els.audioPath.value.trim();
+      if(!src){
+        throw new Error("MP3 路徑是空的");
+      }
+      if(audio.dataset.currentSrc !== src){
+        audio.src = src;
+        audio.dataset.currentSrc = src;
+        audio.load();
+      }
+      return src;
+    }
 
-  try{
-    await audio.play();   // 嘗試解鎖
-    audio.pause();
-    audio.currentTime = 0;
-  }catch(e){
-    console.warn("unlockAudio: play() 被瀏覽器阻擋，稍後重試");
-  }
-
-  audio.muted = false;
-  isUnlocked = true;
-  setStatus("音訊解鎖成功");
-}
-
-async function playSegment(idx){
-  if (!isRunning || isPaused) return;
-
-  if (idx >= segments.length){
-    isRunning = false;
-    setStatus("播放完成");
-    return;
-  }
-
-  currentIndex = idx;
-  const seg = segments[idx];
-  updateText(seg, idx);
-
-  const speed = parseFloat(els.speed.value || "0.9");
-  const delay = Math.max(0, parseInt(els.delay.value || "0", 10));
-  const repeat = Math.max(1, parseInt(els.repeat.value || "1", 10));
-
-  audio.playbackRate = speed;
-  audio.currentTime = seg.start;
-
-  setStatus(`第 ${idx + 1} 句：第 ${repeatCount + 1} 次 / 共 ${repeat} 次`);
-
-  audio.ontimeupdate = null;
-
-  try{
-    await audio.play();
-  }catch(e){
-    setStatus("播放失敗，請改用外部瀏覽器");
-    console.error(e);
-    return;
-  }
-
-  audio.ontimeupdate = () => {
-    if (audio.currentTime >= seg.end){
-      audio.ontimeupdate = null;
-      audio.pause();
-
-      const nextIndex = currentIndex;
-      const nextRepeat = repeatCount;
-      const nextDelay = delay;
-      const nextRepeatMax = repeat;
-
-      setTimeout(() => {
-        if (!isRunning || isPaused) return;
-
-        repeatCount = nextRepeat + 1;
-        if (repeatCount < nextRepeatMax){
-          playSegment(nextIndex);
-        }else{
-          repeatCount = 0;
-          playSegment(nextIndex + 1);
+    function waitForEventOnce(target, eventName, timeoutMs = 4000){
+      return new Promise((resolve) => {
+        let done = false;
+        const timer = setTimeout(() => finish(), timeoutMs);
+        function finish(){
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          target.removeEventListener(eventName, onEvent);
+          resolve();
         }
-      }, nextDelay);
-    }
-  };
-}
-
-function startPlayback(resetIndex = false){
-  if(!segments.length){
-    setStatus("尚未載入 JSON");
-    return;
-  }
-
-  const src = els.audioPath.value.trim();
-  if(!src){
-    setStatus("MP3 路徑是空的");
-    return;
-  }
-
-  if(audio.dataset.currentSrc !== src){
-    audio.src = src;
-    audio.load();
-    audio.dataset.currentSrc = src;
-  }
-
-  applySpeed();
-
-  if(resetIndex){
-    currentIndex = Math.max(0, parseInt(els.startIndex.value || "1", 10) - 1);
-    repeatCount = 0;
-  }
-
-  isRunning = true;
-  isPaused = false;
-  playSegment(currentIndex);
-}
-
-function pausePlayback(){
-  if(!isRunning) return;
-
-  if(!isPaused){
-    isPaused = true;
-    audio.pause();
-    setStatus(`已暫停：第 ${currentIndex + 1} 句`);
-  }else{
-    isPaused = false;
-    setStatus(`繼續播放：第 ${currentIndex + 1} 句`);
-    audio.play().catch(console.error);
-  }
-}
-
-function stopPlayback(){
-  isRunning = false;
-  isPaused = false;
-  audio.pause();
-  audio.ontimeupdate = null;
-  repeatCount = 0;
-  currentIndex = Math.max(0, parseInt(els.startIndex.value || "1", 10) - 1);
-  setStatus("已停止");
-}
-
-async function beginAll(){
-  if(started) return;
-  started = true;
-
-  try{
-    // ✅ 這行一定要在最前面
-    const src = els.audioPath.value.trim();
-    if(!src){
-      throw new Error("MP3 路徑是空的");
+        function onEvent(){ finish(); }
+        target.addEventListener(eventName, onEvent, { once: true });
+      });
     }
 
-audio.src = src;
-audio.dataset.currentSrc = src;
-applySpeed();
+    async function primeAudio(){
+      ensureAudioSource();
+      if (audio.readyState < 2) {
+        await Promise.race([
+          waitForEventOnce(audio, "loadeddata", 4000),
+          waitForEventOnce(audio, "canplay", 4000)
+        ]);
+      }
+    }
 
-await unlockAudio();
-await loadJSON();
+    async function unlockAudio(){
+      applySpeed();
+      await primeAudio();
 
-els.overlay.style.display = "none";
+      audio.muted = true;
+      try{
+        await audio.play();
+        audio.pause();
+      }catch(e){
+        console.warn("unlockAudio: play() 被瀏覽器阻擋，稍後重試");
+      }
+      audio.currentTime = 0;
+      audio.muted = false;
+      isUnlocked = true;
+      setStatus("音訊解鎖成功");
+    }
 
-currentIndex = Math.max(
-  0,
-  parseInt(els.startIndex.value || "1", 10) - 1
-);
+    async function seekIfNeeded(targetTime){
+      if (Math.abs(audio.currentTime - targetTime) <= 0.06) return;
+      audio.currentTime = targetTime;
+      if (audio.seeking) {
+        await Promise.race([
+          waitForEventOnce(audio, "seeked", 1500),
+          waitForEventOnce(audio, "timeupdate", 1500)
+        ]);
+      }
+    }
 
-startPlayback(false);
+    function scheduleNext(delay, fn){
+      if (pendingTimer) clearTimeout(pendingTimer);
+      pendingTimer = setTimeout(() => {
+        pendingTimer = 0;
+        fn();
+      }, delay);
+    }
 
-  }catch(e){
-    started = false;
-    setStatus("初始化失敗，請確認 MP3 / JSON 檔名與路徑");
-    console.error(e);
-  }
-}
+    function goNextSegment(){
+      if (!isRunning || isPaused) return;
+
+      const delay = Math.max(0, parseInt(els.delay.value || "0", 10));
+      const repeat = Math.max(1, parseInt(els.repeat.value || "1", 10));
+      const nextIndex = currentIndex;
+      const nextRepeat = repeatCount + 1;
+
+      if (nextRepeat < repeat) {
+        repeatCount = nextRepeat;
+        scheduleNext(delay, () => playSegment(nextIndex));
+      } else {
+        repeatCount = 0;
+        scheduleNext(delay, () => playSegment(nextIndex + 1));
+      }
+    }
+
+    function monitorPlayback(token){
+      if (!isRunning || isPaused || token !== monitorToken) return;
+
+      if (audio.currentTime >= currentSegEnd - 0.03) {
+        clearAsyncHandles();
+        audio.pause();
+        goNextSegment();
+        return;
+      }
+
+      rafId = requestAnimationFrame(() => monitorPlayback(token));
+    }
+
+    async function playSegment(idx){
+      if (!isRunning || isPaused) return;
+
+      if (idx >= segments.length){
+        clearAsyncHandles();
+        isRunning = false;
+        setStatus("播放完成");
+        return;
+      }
+
+      currentIndex = idx;
+      const seg = segments[idx];
+      updateText(seg, idx);
+
+      applySpeed();
+      currentSegEnd = seg.end;
+      setStatus(`第 ${idx + 1} 句：第 ${repeatCount + 1} 次 / 共 ${Math.max(1, parseInt(els.repeat.value || "1", 10))} 次`);
+
+      try{
+        await seekIfNeeded(seg.start);
+        await audio.play();
+      }catch(e){
+        setStatus("播放失敗，請改用外部瀏覽器");
+        console.error(e);
+        isRunning = false;
+        return;
+      }
+
+      clearAsyncHandles();
+      const token = monitorToken;
+      rafId = requestAnimationFrame(() => monitorPlayback(token));
+    }
+
+    async function startPlayback(resetIndex = false){
+      if(!segments.length){
+        setStatus("尚未載入 JSON");
+        return;
+      }
+
+      ensureAudioSource();
+      await primeAudio();
+      applySpeed();
+
+      if(resetIndex){
+        currentIndex = Math.max(0, parseInt(els.startIndex.value || "1", 10) - 1);
+        repeatCount = 0;
+      }
+
+      clearAsyncHandles();
+      isRunning = true;
+      isPaused = false;
+      playSegment(currentIndex);
+    }
+
+    function pausePlayback(){
+      if(!isRunning) return;
+
+      if(!isPaused){
+        isPaused = true;
+        clearAsyncHandles();
+        audio.pause();
+        setStatus(`已暫停：第 ${currentIndex + 1} 句`);
+      }else{
+        isPaused = false;
+        setStatus(`繼續播放：第 ${currentIndex + 1} 句`);
+        playSegment(currentIndex);
+      }
+    }
+
+    function stopPlayback(){
+      clearAsyncHandles();
+      isRunning = false;
+      isPaused = false;
+      audio.pause();
+      repeatCount = 0;
+      currentIndex = Math.max(0, parseInt(els.startIndex.value || "1", 10) - 1);
+      setStatus("已停止");
+    }
+
+    async function beginAll(){
+      if(started) return;
+      started = true;
+
+      try{
+        ensureAudioSource();
+        applySpeed();
+        await unlockAudio();
+        await loadJSON();
+
+        els.overlay.style.display = "none";
+        currentIndex = Math.max(0, parseInt(els.startIndex.value || "1", 10) - 1);
+        await startPlayback(false);
+      }catch(e){
+        started = false;
+        setStatus("初始化失敗，請確認 MP3 / JSON 檔名與路徑");
+        console.error(e);
+      }
+    }
 
     els.overlayBtn.addEventListener("click", beginAll, {once:true});
     els.overlay.addEventListener("click", beginAll, {once:true});
@@ -588,16 +669,17 @@ startPlayback(false);
       }
     });
 
-    els.playBtn.addEventListener("click", () => {
+    els.playBtn.addEventListener("click", async () => {
       if(!isUnlocked){
         beginAll();
         return;
       }
-      startPlayback(true);
+      await startPlayback(true);
     });
 
     els.pauseBtn.addEventListener("click", pausePlayback);
     els.stopBtn.addEventListener("click", stopPlayback);
+    els.speed.addEventListener("change", applySpeed);
 
     window.addEventListener("load", () => {
       setStatus("待命：請點一下畫面開始");
