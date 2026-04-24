@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日本地圖之歌｜學生跟讀版</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#121a30;
+      --panel2:#18223f;
+      --line:#29365f;
+      --text:#eef2ff;
+      --muted:#9fb0d8;
+      --red:#ff5f57;
+      --orange:#ff9f43;
+      --yellow:#ffd60a;
+      --green:#4cd964;
+      --active:#fff59d;
+      --activeText:#1b1f2e;
+    }
+    *{box-sizing:border-box}
+    body{
+  margin:0;
+  font-family:Arial,"Noto Sans TC",sans-serif;
+  background:linear-gradient(180deg,#09101d,#10182d 45%,#0a1120);
+  color:var(--text);
+  padding-top: env(safe-area-inset-top);
+}
+    .container{
+      max-width:1100px;
+      margin:0 auto;
+      padding:18px;
+    }
+    h1{
+      margin:0 0 8px;
+      font-size:30px;
+    }
+    .sub{
+      color:var(--muted);
+      margin-bottom:16px;
+      line-height:1.6;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:360px 1fr;
+      gap:16px;
+    }
+    .card{
+      background:rgba(18,26,48,.98);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px;
+      box-shadow:0 10px 28px rgba(0,0,0,.28);
+    }
+.main-card{
+  position:relative;
+}
+
+.main-card-wrap{
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  z-index: 50;
+  background:#0b1020;
+  padding-bottom:10px;
+}
+    label{
+      display:block;
+      color:var(--muted);
+      font-size:13px;
+      margin:10px 0 6px;
+      text-align:left;
+    }
+    input, select, button{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid #3a4a7b;
+      font-size:14px;
+    }
+    input, select{
+      background:var(--panel2);
+      color:var(--text);
+    }
+    .btns{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .student-panel{
+      margin-bottom:12px;
+    }
+    .student-hint{
+      color:#d8e6ff;
+      background:#20284a;
+      border:1px solid #32406f;
+      border-radius:14px;
+      padding:12px 14px;
+      font-size:15px;
+      line-height:1.6;
+      margin-bottom:12px;
+    }
+    .student-btns{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:10px;
+    }
+    button{
+      cursor:pointer;
+      border:none;
+      font-weight:800;
+      color:#10172b;
+    }
+    .primary{background:#9cc0ff}
+    .success{background:#a7f3b0}
+    .warning{background:#ffe58f}
+    .danger{background:#ffb4ad}
+    .badge{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#25305f;
+      color:#dce6ff;
+      font-size:12px;
+      margin-bottom:10px;
+    }
+    .jp{
+      font-size:30px;
+      font-weight:900;
+      line-height:1.45;
+      color:var(--red);
+      margin:8px 0 12px;
+      min-height:96px;
+    }
+    .kana{
+      font-size:21px;
+      line-height:1.5;
+      color:var(--orange);
+      margin:4px 0 8px;
+      min-height:36px;
+    }
+    .romaji{
+      font-size:18px;
+      line-height:1.5;
+      color:var(--yellow);
+      margin:4px 0 8px;
+      min-height:32px;
+    }
+    .zh{
+      font-size:21px;
+      line-height:1.5;
+      color:var(--green);
+      min-height:36px;
+    }
+    .status{
+      margin-top:12px;
+      color:#d8e0ff;
+      background:#20284a;
+      border:1px solid #32406f;
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:14px;
+    }
+    .small{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+      margin-top:12px;
+    }
+    .table-wrap{
+      overflow-y:auto;
+      overflow-x:hidden;
+      -webkit-overflow-scrolling:touch;
+      overscroll-behavior:contain;
+      max-height:52vh;
+      border:1px solid var(--line);
+      border-radius:16px;
+      margin-top:16px;
+      background:#12182c;
+    }
+.table-wrap tbody tr{
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.table-wrap tbody tr:hover{
+  background: rgba(255,255,255,0.06);
+}
+
+.table-wrap tbody tr.active:hover{
+  background: var(--active);
+}
+
+.table-wrap tbody tr:active{
+  transform: scale(0.98);
+  background: rgba(255,255,255,0.1);
+}	
+/* ===== Dev settings（隱藏 MP3 / JSON / startIndex）===== */
+.dev-settings{
+  display: none;
+}
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:14px;
+      background:#12182c;
+    }
+    thead th{
+      position:sticky;
+      top:0;
+      background:#1b2340;
+      z-index:2;
+    }
+    th, td{
+      border-bottom:1px solid #293152;
+      padding:10px 12px;
+      vertical-align:top;
+      text-align:left;
+    }
+    tbody tr.active{
+      background:var(--active);
+      color:var(--activeText);
+      font-weight:800;
+    }
+    .overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.82);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
+      padding:20px;
+    }
+    .overlay-box{
+      max-width:520px;
+      width:100%;
+      background:#11192f;
+      border:1px solid #32406f;
+      border-radius:20px;
+      padding:24px;
+      text-align:center;
+      box-shadow:0 10px 30px rgba(0,0,0,.4);
+    }
+    .overlay-title{
+      font-size:28px;
+      font-weight:900;
+      margin-bottom:10px;
+    }
+    .overlay-text{
+      color:#d8e6ff;
+      line-height:1.8;
+      margin-bottom:16px;
+    }
+    .overlay-btn{
+      background:#ffe58f;
+      color:#10172b;
+      border:none;
+      padding:14px 18px;
+      border-radius:14px;
+      font-size:18px;
+      font-weight:900;
+      cursor:pointer;
+      width:100%;
+    }
+@media (max-width: 960px){
+  .grid{grid-template-columns:1fr}
+
+  .main-card{
+    position:relative;
+  }
+
+  .main-card-wrap{
+    top: calc(env(safe-area-inset-top, 0px) + 12px);
+  }
+
+  .table-wrap{
+    max-height:42vh;
+    padding-bottom:24px;
+  }
+
+  #tableBody tr:last-child td{
+    padding-bottom:32px;
+  }
+}
+      .jp{font-size:24px}
+      .kana,.zh{font-size:18px}
+      .romaji{font-size:16px}
+      .student-btns{grid-template-columns:1fr;}
+      .student-panel{padding:12px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay" id="overlay">
+    <div class="overlay-box">
+      <div class="overlay-title">👉 點一下開始</div>
+      <div class="overlay-text">
+        LINE 內建瀏覽器請先點一次，系統會自動解鎖音訊並載入教材。<br>
+        之後可直接點下方任一句播放。
+      </div>
+      <button class="overlay-btn" id="overlayBtn">開始學習</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>日本地圖之歌</h1>
+    <div class="sub">
+      學生版｜點下方任一句即可播放｜適合 LINE 使用
+    </div>
+
+<div class="student-panel card">
+  <!-- 隱藏區：只留給程式使用，學生看不到 -->
+  <div class="dev-settings">
+    <input id="audioPath" type="text" value="Japan47prefectures.mp3">
+    <input id="jsonPath" type="text" value="japan47_shadowing_A_audio_exact_shifted_3_5s.json">
+    <input id="startIndex" type="number" value="1">
+    <select id="speed">
+      <option value="0.8" selected>0.8x</option>
+      <option value="0.85">0.85x</option>
+      <option value="0.9">0.9x</option>
+      <option value="1.0">1.0x</option>
+    </select>
+    <input id="delay" type="number" value="0">
+    <input id="repeat" type="number" value="1">
+    <button id="loadBtn" class="primary" type="button">重新載入 JSON</button>
+  </div>
+
+  <div class="student-hint">
+    使用方式：點下方任一句，會直接跳到該句並播放。需要暫停或停止時，使用下方按鈕。
+  </div>
+
+  <div class="student-btns">
+    <button id="playBtn" class="success" type="button">▶ 播放目前句</button>
+    <button id="pauseBtn" class="warning" type="button">⏸ 暫停 / 繼續</button>
+    <button id="stopBtn" class="danger">🔄 重置</button>
+  </div>
+</div>
+
+<div class="main-card-wrap">
+  <div class="card main-card">
+    <div class="badge" id="progressBadge">尚未載入資料</div>
+    <div class="jp" id="jp">請先點畫面開始</div>
+    <div class="kana" id="kana">平假名：—</div>
+    <div class="romaji" id="romaji">羅馬拼音：—</div>
+    <div class="zh" id="zh">中文：—</div>
+    <div class="status" id="status">狀態：待命</div>
+  </div>
+</div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:120px;">時間</th>
+            <th>日文</th>
+            <th>平假名 / 羅馬拼音</th>
+            <th>中文</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <audio id="audio" preload="auto" playsinline webkit-playsinline></audio>
+
+  <script>
+    const audio = document.getElementById("audio");
+    const tableWrap = document.querySelector(".table-wrap");
+
+    const els = {
+      overlay: document.getElementById("overlay"),
+      overlayBtn: document.getElementById("overlayBtn"),
+      audioPath: document.getElementById("audioPath"),
+      jsonPath: document.getElementById("jsonPath"),
+      speed: document.getElementById("speed"),
+      delay: document.getElementById("delay"),
+      repeat: document.getElementById("repeat"),
+      startIndex: document.getElementById("startIndex"),
+      loadBtn: document.getElementById("loadBtn"),
+      playBtn: document.getElementById("playBtn"),
+      pauseBtn: document.getElementById("pauseBtn"),
+      stopBtn: document.getElementById("stopBtn"),
+      progressBadge: document.getElementById("progressBadge"),
+      jp: document.getElementById("jp"),
+      kana: document.getElementById("kana"),
+      romaji: document.getElementById("romaji"),
+      zh: document.getElementById("zh"),
+      status: document.getElementById("status"),
+      tableBody: document.getElementById("tableBody")
+    };
+
+    let segments = [];
+    let currentIndex = 0;
+    let repeatCount = 0;
+    let isRunning = false;
+    let isPaused = false;
+    let isUnlocked = false;
+    let started = false;
+    let rafId = 0;
+    let monitorToken = 0;
+    let currentSegEnd = 0;
+    let pendingTimer = 0;
+    let activeRow = null;
+
+    audio.preload = "auto";
+    audio.playsInline = true;
+    audio.setAttribute("playsinline", "");
+    audio.setAttribute("webkit-playsinline", "");
+
+    function setStatus(msg){
+      els.status.textContent = "狀態：" + msg;
+    }
+
+    function fmtTime(sec){
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60).toString().padStart(2, "0");
+      return `${m}:${s}`;
+    }
+
+    function applySpeed(){
+      audio.playbackRate = parseFloat(els.speed.value || "0.8");
+    }
+
+    function clearAsyncHandles(){
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = 0;
+      monitorToken += 1;
+      if (pendingTimer) clearTimeout(pendingTimer);
+      pendingTimer = 0;
+      audio.ontimeupdate = null;
+    }
+
+function renderTable(){
+  els.tableBody.innerHTML = "";
+
+  segments.forEach((seg, idx) => {
+    const tr = document.createElement("tr");
+    tr.id = "row-" + idx;
+    tr.dataset.index = idx;
+    tr.style.cursor = "pointer";
+
+    tr.innerHTML = `
+      <td>${fmtTime(seg.start)} - ${fmtTime(seg.end)}</td>
+      <td>${seg.text || ""}</td>
+      <td>${seg.kana || ""}<br><span style="opacity:.85">${seg.romaji || ""}</span></td>
+      <td>${seg.zh || ""}</td>
+    `;
+
+    tr.addEventListener("click", () => {
+      jumpToSegment(idx);
+    });
+
+    els.tableBody.appendChild(tr);
+  });
+}
+
+function jumpToSegment(idx){
+  if (!segments.length) return;
+  if (idx < 0 || idx >= segments.length) return;
+
+  const seg = segments[idx];
+
+  currentIndex = idx;
+  repeatCount = 0;
+
+  clearAsyncHandles();
+  audio.pause();
+  updateText(seg, idx);
+
+  try{
+    audio.currentTime = seg.start;
+  }catch(e){
+    console.warn("jumpToSegment currentTime error", e);
+  }
+
+  isRunning = true;
+  isPaused = false;
+  setStatus(`跳到第 ${idx + 1} 句並開始播放`);
+  playSegment(idx);
+}
+
+    function scrollRowIntoTable(row){
+      if (!tableWrap || !row) return;
+      const rowTop = row.offsetTop;
+      const rowBottom = rowTop + row.offsetHeight;
+      const viewTop = tableWrap.scrollTop;
+      const viewBottom = viewTop + tableWrap.clientHeight;
+      const pad = 18;
+
+      if (rowTop < viewTop + pad) {
+        tableWrap.scrollTop = Math.max(0, rowTop - pad);
+      } else if (rowBottom > viewBottom - pad) {
+        tableWrap.scrollTop = Math.max(0, rowBottom - tableWrap.clientHeight + pad);
+      }
+    }
+
+    function updateText(seg, idx){
+      els.progressBadge.textContent = `第 ${idx + 1} 句 / 共 ${segments.length} 句`;
+      els.jp.textContent = seg.text || "—";
+      els.kana.textContent = "平假名：" + (seg.kana || "—");
+      els.romaji.textContent = "羅馬拼音：" + (seg.romaji || "—");
+      els.zh.textContent = "中文：" + (seg.zh || "—");
+
+      if (activeRow) activeRow.classList.remove("active");
+      const row = document.getElementById("row-" + idx);
+      if(row){
+        row.classList.add("active");
+        activeRow = row;
+        scrollRowIntoTable(row);
+      }
+    }
+
+    async function loadJSON(){
+      const path = els.jsonPath.value.trim();
+      const res = await fetch(path, { cache: "no-store" });
+      if(!res.ok){
+        throw new Error("JSON 載入失敗");
+      }
+      const raw = await res.json();
+      segments = raw.map(seg => ({
+        ...seg,
+        start: Number(seg.start),
+        end: Number(seg.end)
+      }));
+      renderTable();
+      setStatus(`JSON 載入完成，共 ${segments.length} 句`);
+    }
+
+    function ensureAudioSource(){
+      const src = els.audioPath.value.trim();
+      if(!src){
+        throw new Error("MP3 路徑是空的");
+      }
+      if(audio.dataset.currentSrc !== src){
+        audio.src = src;
+        audio.dataset.currentSrc = src;
+        audio.load();
+      }
+      return src;
+    }
+
+    function waitForEventOnce(target, eventName, timeoutMs = 4000){
+      return new Promise((resolve) => {
+        let done = false;
+        const timer = setTimeout(() => finish(), timeoutMs);
+        function finish(){
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          target.removeEventListener(eventName, onEvent);
+          resolve();
+        }
+        function onEvent(){ finish(); }
+        target.addEventListener(eventName, onEvent, { once: true });
+      });
+    }
+
+    async function primeAudio(){
+      ensureAudioSource();
+      if (audio.readyState < 2) {
+        await Promise.race([
+          waitForEventOnce(audio, "loadeddata", 4000),
+          waitForEventOnce(audio, "canplay", 4000)
+        ]);
+      }
+    }
+
+    async function unlockAudio(){
+      applySpeed();
+      await primeAudio();
+
+      audio.muted = true;
+      try{
+        await audio.play();
+        audio.pause();
+      }catch(e){
+        console.warn("unlockAudio: play() 被瀏覽器阻擋，稍後重試");
+      }
+      audio.currentTime = 0;
+      audio.muted = false;
+      isUnlocked = true;
+      setStatus("音訊解鎖成功");
+    }
+
+    async function seekIfNeeded(targetTime){
+      if (Math.abs(audio.currentTime - targetTime) <= 0.06) return;
+      audio.currentTime = targetTime;
+      if (audio.seeking) {
+        await Promise.race([
+          waitForEventOnce(audio, "seeked", 1500),
+          waitForEventOnce(audio, "timeupdate", 1500)
+        ]);
+      }
+    }
+
+    function scheduleNext(delay, fn){
+      if (pendingTimer) clearTimeout(pendingTimer);
+      pendingTimer = setTimeout(() => {
+        pendingTimer = 0;
+        fn();
+      }, delay);
+    }
+
+    function goNextSegment(){
+      if (!isRunning || isPaused) return;
+
+      const delay = Math.max(0, parseInt(els.delay.value || "0", 10));
+      const repeat = Math.max(1, parseInt(els.repeat.value || "1", 10));
+      const nextIndex = currentIndex;
+      const nextRepeat = repeatCount + 1;
+
+      if (nextRepeat < repeat) {
+        repeatCount = nextRepeat;
+        scheduleNext(delay, () => playSegment(nextIndex));
+      } else {
+        repeatCount = 0;
+        scheduleNext(delay, () => playSegment(nextIndex + 1));
+      }
+    }
+
+function monitorPlayback(token){
+  if (!isRunning || isPaused || token !== monitorToken) return;
+
+  const isLastSegment = currentIndex >= segments.length - 1;
+  const stopPoint = isLastSegment ? currentSegEnd : currentSegEnd - 0.03;
+
+  if (audio.currentTime >= stopPoint) {
+    clearAsyncHandles();
+    audio.pause();
+    goNextSegment();
+    return;
+  }
+
+  rafId = requestAnimationFrame(() => monitorPlayback(token));
+}
+
+    async function playSegment(idx){
+      if (!isRunning || isPaused) return;
+
+if (idx >= segments.length){
+  clearAsyncHandles();
+  isRunning = false;
+  isPaused = false;
+  repeatCount = 0;
+
+  setStatus("播放完成，3 秒後回到第 1 句");
+
+  pendingTimer = setTimeout(() => {
+    pendingTimer = 0;
+    currentIndex = 0;
+
+    try{
+      audio.currentTime = segments[0]?.start || 0;
+    }catch(e){}
+
+    if (segments.length > 0) {
+      updateText(segments[0], 0);
+    }
+
+    setStatus("已回到第 1 句，請點句子播放");
+  }, 3000);
+
+  return;
+}
+      currentIndex = idx;
+      const seg = segments[idx];
+      updateText(seg, idx);
+
+      applySpeed();
+      currentSegEnd = seg.end;
+      setStatus(`第 ${idx + 1} 句：第 ${repeatCount + 1} 次 / 共 ${Math.max(1, parseInt(els.repeat.value || "1", 10))} 次`);
+
+      try{
+        await seekIfNeeded(seg.start);
+        await audio.play();
+      }catch(e){
+        setStatus("播放失敗，請改用外部瀏覽器");
+        console.error(e);
+        isRunning = false;
+        return;
+      }
+
+      clearAsyncHandles();
+      const token = monitorToken;
+      rafId = requestAnimationFrame(() => monitorPlayback(token));
+    }
+
+    async function startPlayback(resetIndex = false){
+      if(!segments.length){
+        setStatus("尚未載入 JSON");
+        return;
+      }
+
+      ensureAudioSource();
+      await primeAudio();
+      applySpeed();
+
+      if(resetIndex){
+        currentIndex = Math.max(0, parseInt(els.startIndex.value || "1", 10) - 1);
+        repeatCount = 0;
+      }
+
+      clearAsyncHandles();
+      isRunning = true;
+      isPaused = false;
+      playSegment(currentIndex);
+    }
+
+    function pausePlayback(){
+      if(!isRunning) return;
+
+      if(!isPaused){
+        isPaused = true;
+        clearAsyncHandles();
+        audio.pause();
+        setStatus(`已暫停：第 ${currentIndex + 1} 句`);
+      }else{
+        isPaused = false;
+        setStatus(`繼續播放：第 ${currentIndex + 1} 句`);
+        playSegment(currentIndex);
+      }
+    }
+
+function stopPlayback(){
+  clearAsyncHandles();
+  isRunning = false;
+  isPaused = false;
+  audio.pause();
+  repeatCount = 0;
+  currentIndex = 0;
+
+  try{
+    audio.currentTime = segments[0]?.start || 0;
+  }catch(e){}
+
+  if (segments.length > 0) {
+    updateText(segments[0], 0);
+  }
+
+  setStatus("已重置到第 1 句");
+}
+
+    async function beginAll(){
+      if(started) return;
+      started = true;
+
+      try{
+        ensureAudioSource();
+        applySpeed();
+        await unlockAudio();
+        await loadJSON();
+
+        els.overlay.style.display = "none";
+        currentIndex = Math.max(0, parseInt(els.startIndex.value || "1", 10) - 1);
+        repeatCount = 0;
+        if (segments.length) {
+          updateText(segments[currentIndex], currentIndex);
+        }
+        setStatus("教材已載入，請點下方任一句開始播放");
+      }catch(e){
+        started = false;
+        setStatus("初始化失敗，請確認 MP3 / JSON 檔名與路徑");
+        console.error(e);
+      }
+    }
+
+    els.overlayBtn.addEventListener("click", beginAll, {once:true});
+    els.overlay.addEventListener("click", beginAll, {once:true});
+
+    els.loadBtn.addEventListener("click", async () => {
+      try{
+        await loadJSON();
+      }catch(e){
+        setStatus("重新載入 JSON 失敗");
+      }
+    });
+
+    els.playBtn.addEventListener("click", async () => {
+      if(!isUnlocked){
+        beginAll();
+        return;
+      }
+      await startPlayback(false);
+    });
+
+    els.pauseBtn.addEventListener("click", pausePlayback);
+    els.stopBtn.addEventListener("click", stopPlayback);
+    els.speed.addEventListener("change", applySpeed);
+
+    window.addEventListener("load", () => {
+      setStatus("待命：請點一下開始學習");
+    });
+  </script>
+</body>
+</html>
